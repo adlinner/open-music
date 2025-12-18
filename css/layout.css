@@ -1,0 +1,543 @@
+/* ========================================
+   Open Music - Layout
+   应用布局样式
+   ======================================== */
+
+/* ========================================
+   主布局结构
+   ======================================== */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ========================================
+   头部导航
+   ======================================== */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-xl);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  height: 70px;
+  flex-shrink: 0;
+  z-index: var(--z-sticky);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  user-select: none;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: var(--text-xl);
+}
+
+.header-search {
+  flex: 1;
+  max-width: 500px;
+  margin: 0 var(--spacing-xl);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* ========================================
+   主内容区
+   ======================================== */
+
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ========================================
+   侧边栏
+   ======================================== */
+
+.sidebar {
+  width: 260px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-section {
+  padding: var(--spacing-lg) var(--spacing-md);
+}
+
+.sidebar-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-md);
+  padding: 0 var(--spacing-md);
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: var(--text-base);
+}
+
+.sidebar-item:hover {
+  background: var(--bg-glass);
+  color: var(--text-primary);
+}
+
+.sidebar-item.active {
+  background: var(--bg-glass-hover);
+  color: var(--color-primary);
+  font-weight: var(--font-medium);
+}
+
+.sidebar-item .icon {
+  color: currentColor;
+}
+
+/* 歌单列表 */
+.playlist-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.playlist-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.playlist-item:hover {
+  background: var(--bg-glass);
+  color: var(--text-primary);
+}
+
+.playlist-item.active {
+  background: var(--bg-glass-hover);
+  color: var(--text-primary);
+  font-weight: var(--font-medium);
+}
+
+.playlist-item-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playlist-item-count {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* ========================================
+   内容区域
+   ======================================== */
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-xl);
+  background: var(--bg-primary);
+}
+
+.content-header {
+  margin-bottom: var(--spacing-xl);
+}
+
+.content-title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.content-subtitle {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+}
+
+.content-body {
+  /* 内容区域主体 */
+}
+
+/* ========================================
+   歌曲列表
+   ======================================== */
+
+.song-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.song-list-header {
+  display: grid;
+  grid-template-columns: 48px 1fr 200px 80px;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-sm);
+}
+
+.song-list-item {
+  display: grid;
+  grid-template-columns: 48px 1fr 200px 80px;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+/* ========================================
+   网格布局
+   ======================================== */
+
+.grid {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.grid-auto {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+/* ========================================
+   播放器栏
+   ======================================== */
+
+.player-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 90px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  padding: var(--spacing-md) var(--spacing-xl);
+  z-index: var(--z-player);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xl);
+  backdrop-filter: blur(20px);
+}
+
+/* 当前播放信息 */
+.player-current {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  min-width: 250px;
+}
+
+.player-cover {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--bg-tertiary);
+  box-shadow: var(--shadow-md);
+}
+
+.player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 2px;
+}
+
+.player-artist {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 播放控制 */
+.player-controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  max-width: 600px;
+}
+
+.player-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.player-progress {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.player-time {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+}
+
+.player-time:first-child {
+  text-align: right;
+}
+
+.player-time:last-child {
+  text-align: left;
+}
+
+.player-progress-bar {
+  flex: 1;
+}
+
+/* 右侧控制 */
+.player-extras {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  min-width: 250px;
+  justify-content: flex-end;
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 120px;
+}
+
+.volume-slider {
+  flex: 1;
+}
+
+/* ========================================
+   歌词面板
+   ======================================== */
+
+.lyrics-panel {
+  position: fixed;
+  right: 0;
+  top: 70px;
+  bottom: 90px;
+  width: 350px;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-color);
+  padding: var(--spacing-xl);
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform var(--transition-slow);
+  z-index: var(--z-sticky);
+}
+
+.lyrics-panel.active {
+  transform: translateX(0);
+}
+
+.lyrics-panel-header {
+  margin-bottom: var(--spacing-xl);
+}
+
+.lyrics-panel-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.lyrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.lyric-line {
+  font-size: var(--text-base);
+  color: var(--text-tertiary);
+  line-height: 1.8;
+  transition: all var(--transition-normal);
+  cursor: pointer;
+}
+
+.lyric-line:hover {
+  color: var(--text-secondary);
+}
+
+.lyric-line.active {
+  color: var(--color-primary);
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+  transform: translateX(var(--spacing-sm));
+}
+
+/* ========================================
+   响应式布局
+   ======================================== */
+
+/* 移动端 (< 768px) */
+@media (max-width: 767px) {
+  .header {
+    padding: var(--spacing-md);
+  }
+  
+  .header-search {
+    display: none;
+  }
+  
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 70px;
+    bottom: 90px;
+    transform: translateX(-100%);
+    transition: transform var(--transition-slow);
+    z-index: var(--z-modal);
+  }
+  
+  .sidebar.active {
+    transform: translateX(0);
+  }
+  
+  .content {
+    padding: var(--spacing-md);
+  }
+  
+  .player-bar {
+    padding: var(--spacing-md);
+    flex-wrap: wrap;
+    height: auto;
+  }
+  
+  .player-current {
+    width: 100%;
+    order: -1;
+  }
+  
+  .player-controls {
+    width: 100%;
+  }
+  
+  .player-extras {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .lyrics-panel {
+    width: 100%;
+  }
+  
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 平板 (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .sidebar {
+    width: 200px;
+  }
+  
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .lyrics-panel {
+    width: 300px;
+  }
+}
+
+/* 桌面 (>= 1024px) */
+@media (min-width: 1024px) {
+  /* 默认桌面样式 */
+}
+
+/* 大屏 (>= 1280px) */
+@media (min-width: 1280px) {
+  .content {
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+}

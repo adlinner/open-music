@@ -1,0 +1,132 @@
+/* Open Music - Button Enhancements
+ * 额外的按钮优化样式
+ */
+
+/* 播放器栏按钮特殊样式 */
+.player-bar .btn-icon,
+.player-bar .btn-icon-sm,
+.player-bar .btn-icon-lg {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.player-bar .btn-icon:hover,
+.player-bar .btn-icon-sm:hover,
+.player-bar .btn-icon-lg:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 歌曲列表中的操作按钮 */
+.song-item .btn-icon-sm {
+  opacity: 0.7;
+  transition: all var(--transition-normal);
+}
+
+.song-item:hover .btn-icon-sm {
+  opacity: 1;
+}
+
+/* 主播放按钮特殊效果 */
+#playBtn {
+  background: linear-gradient(135deg, 
+    rgba(102, 126, 234, 0.2) 0%, 
+    rgba(118, 75, 162, 0.2) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+#playBtn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+#playBtn:hover::before {
+  width: 100%;
+  height: 100%;
+}
+
+#playBtn:hover {
+  background: linear-gradient(135deg, 
+    rgba(102, 126, 234, 0.35) 0%, 
+    rgba(118, 75, 162, 0.35) 100%);
+}
+
+/* 收藏按钮动画 */
+#favoriteBtn .icon-sm {
+  transition: transform var(--transition-normal);
+}
+
+#favoriteBtn:hover .icon-sm {
+  transform: scale(1.2);
+}
+
+#favoriteBtn:active .icon-sm {
+  transform: scale(0.9);
+}
+
+/* 按钮涟漪效果 */
+@keyframes ripple-effect {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(4);
+    opacity: 0;
+  }
+}
+
+.btn-icon::after,
+.btn-icon-sm::after,
+.btn-icon-lg::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.btn-icon:active::after,
+.btn-icon-sm:active::after,
+.btn-icon-lg:active::after {
+  animation: ripple-effect 0.6s ease-out;
+}
+
+/* 按钮组间距优化 */
+.player-buttons {
+  gap: var(--spacing-md);
+}
+
+.player-buttons .btn-icon-lg {
+  margin: 0 var(--spacing-sm);
+}
+
+/* 深色主题优化 */
+[data-theme="light"] .btn-icon,
+[data-theme="light"] .btn-icon-sm,
+[data-theme="light"] .btn-icon-lg {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .btn-icon:hover,
+[data-theme="light"] .btn-icon-sm:hover,
+[data-theme="light"] .btn-icon-lg:hover {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}

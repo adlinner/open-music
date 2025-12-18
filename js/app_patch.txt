@@ -1,0 +1,4 @@
+Search function improvements:
+1. Line 205-217: Added console.log for debugging
+2. Line 207: Check if results array has length > 0
+3. Line 213: Better empty state message

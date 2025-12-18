@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Open Music - 免费在线音乐播放器，支持网易云、QQ音乐、酷我音乐">
+  <meta name="keywords" content="音乐播放器,在线音乐,免费音乐,网易云音乐,QQ音乐,酷我音乐">
+  <title>Open Music - 在线音乐播放器</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/button-enhancements.css">
+  <link rel="stylesheet" href="css/layout.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+</head>
+<body>
+  
+  <!-- 主应用容器 -->
+  <div class="app" id="app">
+    
+    <!-- 头部导航 -->
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">🎵</div>
+        <span>Open Music</span>
+      </div>
+      
+      <div class="header-search">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            class="input search-input" 
+            placeholder="搜索歌曲、歌手..." 
+            id="searchInput"
+          >
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button class="btn-icon" id="themeToggle" title="切换主题">
+          <span class="icon">🌙</span>
+        </button>
+        <button class="btn-icon" id="menuToggle" title="菜单">
+          <span class="icon">☰</span>
+        </button>
+      </div>
+    </header>
+    
+    <!-- 主内容区 -->
+    <div class="main">
+      
+      <!-- 侧边栏 -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-section">
+          <nav class="sidebar-menu">
+            <a href="#" class="sidebar-item active" data-view="discover">
+              <span class="icon">🏠</span>
+              <span>发现音乐</span>
+            </a>
+            <a href="#" class="sidebar-item" data-view="search">
+              <span class="icon">🔍</span>
+              <span>搜索</span>
+            </a>
+            <a href="#" class="sidebar-item" data-view="favorites">
+              <span class="icon">❤️</span>
+              <span>我的收藏</span>
+            </a>
+            <a href="#" class="sidebar-item" data-view="history">
+              <span class="icon">🕒</span>
+              <span>播放历史</span>
+            </a>
+          </nav>
+        </div>
+        
+        <div class="sidebar-section">
+          <div class="sidebar-title">我的歌单</div>
+          <div class="playlist-list" id="playlistList">
+            <button class="btn btn-secondary btn-sm" id="createPlaylistBtn" style="width: 100%;">
+              <span>➕</span>
+              <span>创建歌单</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 内容区域 -->
+      <main class="content" id="content">
+        
+        <!-- 发现音乐视图 -->
+        <div class="view" id="discoverView">
+          <div class="content-header">
+            <h1 class="content-title">发现音乐</h1>
+            <p class="content-subtitle">探索来自不同平台的热门音乐</p>
+          </div>
+          
+          <div class="content-body">
+            <h2 class="text-xl font-semibold mb-lg">热门排行榜</h2>
+            <div class="grid grid-3" id="toplistsGrid">
+              <div class="skeleton" style="height: 200px;"></div>
+              <div class="skeleton" style="height: 200px;"></div>
+              <div class="skeleton" style="height: 200px;"></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 搜索视图 -->
+        <div class="view hidden" id="searchView">
+          <div class="content-header">
+            <h1 class="content-title">搜索结果</h1>
+            <p class="content-subtitle" id="searchSubtitle">输入关键词开始搜索</p>
+          </div>
+          
+          <div class="content-body">
+            <div class="song-list" id="searchResults">
+              <!-- 搜索结果将在这里显示 -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- 收藏视图 -->
+        <div class="view hidden" id="favoritesView">
+          <div class="content-header">
+            <h1 class="content-title">我的收藏</h1>
+            <p class="content-subtitle">你收藏的所有歌曲</p>
+          </div>
+          
+          <div class="content-body">
+            <div class="song-list" id="favoritesList">
+              <!-- 收藏列表将在这里显示 -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- 播放历史视图 -->
+        <div class="view hidden" id="historyView">
+          <div class="content-header">
+            <h1 class="content-title">播放历史</h1>
+            <p class="content-subtitle">最近播放的歌曲</p>
+          </div>
+          
+          <div class="content-body">
+            <div class="song-list" id="historyList">
+              <!-- 播放历史将在这里显示 -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- 歌单详情视图 -->
+        <div class="view hidden" id="playlistDetailView">
+          <div class="content-header">
+            <h1 class="content-title" id="playlistDetailTitle">歌单</h1>
+            <p class="content-subtitle" id="playlistDetailSubtitle"></p>
+          </div>
+          
+          <div class="content-body">
+            <div class="flex gap-md mb-lg">
+              <button class="btn btn-primary" id="playAllBtn">
+                <span>▶️</span>
+                <span>播放全部</span>
+              </button>
+              <button class="btn btn-secondary" id="deletePlaylistBtn">
+                <span>🗑️</span>
+                <span>删除歌单</span>
+              </button>
+            </div>
+            <div class="song-list" id="playlistSongs">
+              <!-- 歌单歌曲将在这里显示 -->
+            </div>
+          </div>
+        </div>
+        
+      </main>
+      
+    </div>
+    
+    <!-- 播放器栏 -->
+    <div class="player-bar">
+      <!-- 当前播放信息 -->
+      <div class="player-current">
+        <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23252541' width='100' height='100'/></svg>" 
+             alt="Cover" 
+             class="player-cover" 
+             id="playerCover">
+        <div class="player-info">
+          <div class="player-title" id="playerTitle">未播放</div>
+          <div class="player-artist" id="playerArtist">-</div>
+        </div>
+        <button class="btn-icon-sm" id="favoriteBtn" title="收藏">
+          <span class="icon-sm">🤍</span>
+        </button>
+      </div>
+      
+      <!-- 播放控制 -->
+      <div class="player-controls">
+        <div class="player-buttons">
+          <button class="btn-icon-sm" id="shuffleBtn" title="随机播放">
+            <span class="icon-sm">🔀</span>
+          </button>
+          <button class="btn-icon-sm" id="prevBtn" title="上一曲">
+            <span class="icon-sm">⏮️</span>
+          </button>
+          <button class="btn-icon-lg" id="playBtn" title="播放/暂停">
+            <span class="icon-lg">▶️</span>
+          </button>
+          <button class="btn-icon-sm" id="nextBtn" title="下一曲">
+            <span class="icon-sm">⏭️</span>
+          </button>
+          <button class="btn-icon-sm" id="repeatBtn" title="循环模式">
+            <span class="icon-sm">🔁</span>
+          </button>
+        </div>
+        
+        <div class="player-progress">
+          <span class="player-time" id="currentTime">0:00</span>
+          <div class="progress-bar player-progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+            <div class="progress-thumb" id="progressThumb"></div>
+          </div>
+          <span class="player-time" id="duration">0:00</span>
+        </div>
+      </div>
+      
+      <!-- 右侧控制 -->
+      <div class="player-extras">
+        <button class="btn-icon-sm" id="lyricsBtn" title="歌词">
+          <span class="icon-sm">📝</span>
+        </button>
+        <button class="btn-icon-sm" id="playlistBtn" title="播放列表">
+          <span class="icon-sm">📑</span>
+        </button>
+        <div class="volume-control">
+          <button class="btn-icon-sm" id="volumeBtn" title="音量">
+            <span class="icon-sm" id="volumeIcon">🔊</span>
+          </button>
+          <div class="slider volume-slider" id="volumeSlider">
+            <div class="slider-fill" id="volumeFill" style="width: 80%;"></div>
+            <div class="slider-thumb" id="volumeThumb" style="left: 80%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  
+  <!-- 歌词面板 -->
+  <div class="lyrics-panel" id="lyricsPanel">
+    <div class="lyrics-panel-header">
+      <h3 class="lyrics-panel-title">歌词</h3>
+    </div>
+    <div class="lyrics-list" id="lyricsList">
+      <div class="empty-state">
+        <div class="empty-state-title">暂无歌词</div>
+        <div class="empty-state-description">播放歌曲后将显示歌词</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- JavaScript -->
+  <script src="js/api.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/lyrics.js"></script>
+  <script src="js/app.js"></script>
+  
+</body>
+</html>
