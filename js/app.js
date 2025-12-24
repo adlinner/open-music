@@ -7,30 +7,88 @@ const App = {
   currentView: 'discover',
   currentPlaylist: null,
   searchTimeout: null,
-  
+
+  /**
+   * 显示 Toast 提示
+   */
+  showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toastContainer');
+
+    const icons = {
+      error: '❌',
+      success: '✅',
+      warning: '⚠️',
+      info: 'ℹ️'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+      <div class="toast-icon">${icons[type] || icons.info}</div>
+      <div class="toast-content">
+        <div class="toast-message">${message}</div>
+      </div>
+      <button class="toast-close" title="关闭">✕</button>
+    `;
+
+    container.appendChild(toast);
+
+    // 自动移除定时器
+    let autoRemoveTimer = null;
+
+    // 关闭按钮事件
+    const closeBtn = toast.querySelector('.toast-close');
+    const removeToast = () => {
+      // 清除自动移除定时器
+      if (autoRemoveTimer) {
+        clearTimeout(autoRemoveTimer);
+        autoRemoveTimer = null;
+      }
+
+      toast.classList.add('toast-hide');
+      setTimeout(() => {
+        if (toast.parentNode) {
+          container.removeChild(toast);
+        }
+      }, 300);
+    };
+
+    // 绑定关闭按钮点击事件
+    closeBtn.addEventListener('click', removeToast);
+
+    // 设置自动移除
+    if (duration > 0) {
+      autoRemoveTimer = setTimeout(removeToast, duration);
+    }
+  },
+
   /**
    * 初始化应用
    */
   async init() {
     console.log('Initializing Open Music...');
-    
+
     // 初始化存储
     await Storage.init();
-    
+
     // 初始化播放器
     Player.init();
-    
+
+    // 初始化音量 UI
+    this.updateVolumeUI(Player.volume);
+
     // 加载数据
     await this.loadPlaylists();
     await this.loadTopLists();
-    
+
     // 绑定事件
     this.bindEvents();
     this.bindPlayerEvents();
-    
+    this.bindModalEvents();
+
     // 检查主题设置
     this.loadTheme();
-    
+
     console.log('Open Music initialized successfully!');
   },
   
@@ -104,14 +162,51 @@ const App = {
     
     // 歌词按钮
     document.getElementById('lyricsBtn').addEventListener('click', () => {
-      document.getElementById('lyricsPanel').classList.toggle('active');
+      const lyricsPanel = document.getElementById('lyricsPanel');
+      const playlistPanel = document.getElementById('playlistPanel');
+
+      // 关闭播放列表面板
+      playlistPanel.classList.remove('active');
+
+      // 切换歌词面板
+      lyricsPanel.classList.toggle('active');
+    });
+
+    // 播放列表按钮
+    document.getElementById('playlistBtn').addEventListener('click', () => {
+      const lyricsPanel = document.getElementById('lyricsPanel');
+      const playlistPanel = document.getElementById('playlistPanel');
+
+      // 关闭歌词面板
+      lyricsPanel.classList.remove('active');
+
+      // 切换播放列表面板
+      playlistPanel.classList.toggle('active');
+
+      // 更新播放列表显示
+      this.updatePlaylistQueue();
+    });
+
+    // 清空播放列表
+    document.getElementById('clearPlaylistBtn').addEventListener('click', () => {
+      if (confirm('确定要清空播放列表吗？')) {
+        Player.playlist = [];
+        Player.currentIndex = 0;
+        this.updatePlaylistQueue();
+        this.showToast('播放列表已清空', 'success');
+      }
     });
     
     // 播放全部
     document.getElementById('playAllBtn')?.addEventListener('click', () => {
       this.playAllSongs();
     });
-    
+
+    // 播放榜单全部
+    document.getElementById('playToplistBtn')?.addEventListener('click', () => {
+      this.playToplistSongs();
+    });
+
     // 删除歌单
     document.getElementById('deletePlaylistBtn')?.addEventListener('click', () => {
       this.deleteCurrentPlaylist();
@@ -165,8 +260,8 @@ const App = {
         Player.setVolume(0);
         this.updateVolumeUI(0);
       } else {
-        Player.setVolume(0.8);
-        this.updateVolumeUI(0.8);
+        Player.setVolume(0.5);
+        this.updateVolumeUI(0.5);
       }
     });
     
@@ -185,6 +280,27 @@ const App = {
     
     Player.on('modechange', (mode) => {
       this.updatePlayModeUI(mode);
+    });
+
+    Player.on('error', (error) => {
+      this.onPlayerError(error);
+    });
+  },
+
+  /**
+   * 绑定模态框事件
+   */
+  bindModalEvents() {
+    // 关闭歌单选择模态框
+    document.getElementById('closePlaylistModal').addEventListener('click', () => {
+      this.closePlaylistSelectModal();
+    });
+
+    // 点击模态框背景关闭
+    document.getElementById('playlistSelectModal').addEventListener('click', (e) => {
+      if (e.target.id === 'playlistSelectModal') {
+        this.closePlaylistSelectModal();
+      }
     });
   },
   
@@ -222,16 +338,16 @@ const App = {
    */
   switchView(view) {
     this.currentView = view;
-    
+
     // 隐藏所有视图
     document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-    
+
     // 显示目标视图
     const targetView = document.getElementById(`${view}View`);
     if (targetView) {
       targetView.classList.remove('hidden');
     }
-    
+
     // 加载视图数据
     switch (view) {
       case 'favorites':
@@ -239,6 +355,9 @@ const App = {
         break;
       case 'history':
         this.loadHistory();
+        break;
+      case 'discover':
+        // 重新加载排行榜（如果需要）
         break;
     }
   },
@@ -280,49 +399,41 @@ const App = {
    */
   async loadToplistSongs(source, id, name) {
     console.log('Loading toplist:', source, id);
-    
-    const content = document.getElementById('content');
-    content.innerHTML = `
-      <div class="content-header">
-        <h1 class="content-title">${name}</h1>
-        <p class="content-subtitle">来自${source === 'netease' ? '网易云音乐' : source}</p>
-      </div>
-      <div class="content-body">
-        <div class="spinner-lg" style="margin: 2rem auto;"></div>
-      </div>
-    `;
-    
+
+    // 切换到榜单详情视图
+    this.switchView('toplistDetail');
+
+    // 更新标题
+    document.getElementById('toplistDetailTitle').textContent = name;
+    document.getElementById('toplistDetailSubtitle').textContent = '加载中...';
+
+    // 显示加载状态
+    const songList = document.getElementById('toplistSongs');
+    songList.innerHTML = '<div class="spinner-lg" style="margin: 2rem auto;"></div>';
+
     try {
       const result = await API.getToplistSongs(source, id);
-      
+
       if (result.data && result.data.list) {
         const songs = result.data.list.map(song => ({
           ...song,
           platform: source
         }));
-        
-        content.innerHTML = `
-          <div class="content-header">
-            <h1 class="content-title">${name}</h1>
-            <p class="content-subtitle">共 ${songs.length} 首歌曲</p>
-          </div>
-          <div class="content-body">
-            <button class="btn btn-primary mb-lg" onclick="App.playToplistSongs()">
-              <span>▶️</span>
-              <span>播放全部</span>
-            </button>
-            <div class="song-list" id="toplistSongs"></div>
-          </div>
-        `;
-        
+
+        // 更新副标题
+        document.getElementById('toplistDetailSubtitle').textContent = `共 ${songs.length} 首歌曲`;
+
         // 保存到临时变量
         this.tempSongs = songs;
-        
-        const songList = document.getElementById('toplistSongs');
+
+        // 渲染歌曲列表
         this.renderSongList(songList, songs);
+      } else {
+        songList.innerHTML = '<div class="empty-state"><div class="empty-state-title">暂无歌曲</div></div>';
       }
     } catch (error) {
       console.error('Failed to load toplist songs:', error);
+      songList.innerHTML = '<div class="empty-state"><div class="empty-state-title">加载失败</div><div class="empty-state-description">请稍后重试</div></div>';
     }
   },
   
@@ -338,15 +449,41 @@ const App = {
   /**
    * 渲染歌曲列表
    */
-  renderSongList(container, songs) {
+  renderSongList(container, songs, options = {}) {
     if (songs.length === 0) {
       container.innerHTML = '<div class="empty-state"><div class="empty-state-title">暂无歌曲</div></div>';
       return;
     }
-    
+
+    const { showRemoveFromPlaylist = false } = options;
+
     container.innerHTML = songs.map((song, index) => {
       const coverUrl = song.platform && song.id ? API.getPicUrl(song.platform, song.id) : '';
-      
+
+      // 根据不同场景显示不同的操作按钮
+      let actionButtons = '';
+      if (showRemoveFromPlaylist) {
+        // 歌单详情视图：显示移出歌单按钮
+        actionButtons = `
+          <button class="btn-icon-sm" onclick="App.playSong(${index})" title="播放">
+            <span class="icon-sm">▶️</span>
+          </button>
+          <button class="btn-icon-sm" onclick="App.removeFromPlaylist(${index})" title="移出歌单">
+            <span class="icon-sm">➖</span>
+          </button>
+        `;
+      } else {
+        // 其他视图：显示添加到歌单按钮
+        actionButtons = `
+          <button class="btn-icon-sm" onclick="App.playSong(${index})" title="播放">
+            <span class="icon-sm">▶️</span>
+          </button>
+          <button class="btn-icon-sm" onclick="App.addToPlaylist(${index})" title="添加到歌单">
+            <span class="icon-sm">➕</span>
+          </button>
+        `;
+      }
+
       return `
         <div class="song-item" data-index="${index}">
           <img src="${coverUrl}" alt="${song.name}" class="song-cover" onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect fill=\'%23252541\' width=\'100\' height=\'100\'/></svg>'">
@@ -356,17 +493,12 @@ const App = {
           </div>
           <span class="badge">${this.getPlatformName(song.platform)}</span>
           <div class="flex gap-sm">
-            <button class="btn-icon-sm" onclick="App.playSong(${index})" title="播放">
-              <span class="icon-sm">▶️</span>
-            </button>
-            <button class="btn-icon-sm" onclick="App.addToPlaylist(${index})" title="添加到歌单">
-              <span class="icon-sm">➕</span>
-            </button>
+            ${actionButtons}
           </div>
         </div>
       `;
     }).join('');
-    
+
     // 保存当前歌曲列表
     this.currentSongs = songs;
   },
@@ -385,23 +517,26 @@ const App = {
    */
   async onPlay(song) {
     if (!song) return;
-    
+
     // 更新 UI
     document.getElementById('playerTitle').textContent = song.name || '未知歌曲';
     document.getElementById('playerArtist').textContent = song.artist || '未知歌手';
     document.getElementById('playBtn').innerHTML = '<span class="icon-lg">⏸️</span>';
-    
+
     // 更新封面
     if (song.platform && song.id) {
       const coverUrl = API.getPicUrl(song.platform, song.id);
       document.getElementById('playerCover').src = coverUrl;
     }
-    
+
     // 加载歌词
     await this.loadLyrics(song);
-    
+
     // 更新收藏状态
     await this.updateFavoriteButton();
+
+    // 更新播放列表显示
+    this.updatePlaylistQueue();
   },
   
   /**
@@ -410,7 +545,19 @@ const App = {
   onPause() {
     document.getElementById('playBtn').innerHTML = '<span class="icon-lg">▶️</span>';
   },
-  
+
+  /**
+   * 播放器错误事件
+   */
+  onPlayerError(error) {
+    console.error('Player error:', error);
+
+    const song = Player.currentSong;
+    const songName = song ? song.name : '歌曲';
+
+    this.showToast(`播放失败：${songName}`, 'error', 4000);
+  },
+
   /**
    * 时间更新事件
    */
@@ -528,15 +675,15 @@ const App = {
   async loadPlaylistDetail(playlistId) {
     this.currentPlaylist = playlistId;
     this.switchView('playlistDetail');
-    
+
     const playlist = await Storage.getPlaylist(playlistId);
     const songs = await Storage.getPlaylistSongs(playlistId);
-    
+
     document.getElementById('playlistDetailTitle').textContent = playlist.name;
     document.getElementById('playlistDetailSubtitle').textContent = `共 ${songs.length} 首歌曲`;
-    
+
     const container = document.getElementById('playlistSongs');
-    this.renderSongList(container, songs);
+    this.renderSongList(container, songs, { showRemoveFromPlaylist: true });
   },
   
   /**
@@ -554,20 +701,124 @@ const App = {
   async addToPlaylist(index) {
     const song = this.currentSongs[index];
     if (!song) return;
-    
+
     const playlists = await Storage.getAllPlaylists();
     if (playlists.length === 0) {
-      alert('请先创建歌单');
+      this.showToast('请先创建歌单', 'warning');
       return;
     }
-    
-    // 简单实现：添加到第一个歌单
+
+    // 保存当前要添加的歌曲
+    this.songToAdd = song;
+
+    // 显示歌单选择模态框
+    this.showPlaylistSelectModal(playlists);
+  },
+
+  /**
+   * 显示歌单选择模态框
+   */
+  showPlaylistSelectModal(playlists) {
+    const modal = document.getElementById('playlistSelectModal');
+    const listContainer = document.getElementById('playlistSelectList');
+
+    // 渲染歌单列表
+    listContainer.innerHTML = playlists.map(playlist => `
+      <div class="playlist-select-item" data-playlist-id="${playlist.id}">
+        <div class="playlist-select-item-info">
+          <div class="playlist-select-item-name">${playlist.name}</div>
+          <div class="playlist-select-item-count">${playlist.songCount || 0} 首歌曲</div>
+        </div>
+        <div class="playlist-select-item-icon">➕</div>
+      </div>
+    `).join('');
+
+    // 绑定点击事件
+    listContainer.querySelectorAll('.playlist-select-item').forEach(item => {
+      item.addEventListener('click', async () => {
+        const playlistId = item.dataset.playlistId;
+        await this.addSongToSelectedPlaylist(playlistId);
+      });
+    });
+
+    // 显示模态框
+    modal.style.display = 'flex';
+  },
+
+  /**
+   * 关闭歌单选择模态框
+   */
+  closePlaylistSelectModal() {
+    const modal = document.getElementById('playlistSelectModal');
+    modal.style.display = 'none';
+    this.songToAdd = null;
+  },
+
+  /**
+   * 添加歌曲到选中的歌单
+   */
+  async addSongToSelectedPlaylist(playlistId) {
+    if (!this.songToAdd) return;
+
     try {
-      await Storage.addSongToPlaylist(playlists[0].id, song);
-      alert('已添加到歌单');
+      await Storage.addSongToPlaylist(playlistId, this.songToAdd);
+
+      // 获取歌单名称
+      const playlist = await Storage.getPlaylist(playlistId);
+
+      // 显示成功提示
+      this.showToast(`已添加到"${playlist.name}"`, 'success');
+
+      // 关闭模态框
+      this.closePlaylistSelectModal();
+
+      // 更新侧边栏歌单列表（更新歌曲数）
+      await this.loadPlaylists();
+
+      // 如果当前正在查看这个歌单，刷新歌单详情
+      if (this.currentView === 'playlistDetail' && this.currentPlaylist == playlistId) {
+        console.log('Refreshing current playlist view');
+        await this.loadPlaylistDetail(playlistId);
+      }
     } catch (error) {
       console.error('Failed to add song:', error);
-      alert('添加失败');
+
+      // 处理重复添加的情况
+      if (error.message === 'SONG_ALREADY_EXISTS') {
+        this.showToast('该歌曲已在歌单中', 'warning');
+        this.closePlaylistSelectModal();
+      } else {
+        this.showToast('添加失败，请重试', 'error');
+      }
+    }
+  },
+
+  /**
+   * 从歌单移除歌曲
+   */
+  async removeFromPlaylist(index) {
+    const song = this.currentSongs[index];
+    if (!song || !this.currentPlaylist) return;
+
+    if (!confirm(`确定要将"${song.name}"移出歌单吗？`)) {
+      return;
+    }
+
+    try {
+      // 移除歌曲
+      await Storage.removeSongFromPlaylist(song.uniqueId, this.currentPlaylist);
+
+      // 显示成功提示
+      this.showToast('已从歌单移除', 'success');
+
+      // 重新加载歌单详情
+      await this.loadPlaylistDetail(this.currentPlaylist);
+
+      // 更新侧边栏歌单列表（更新歌曲数）
+      await this.loadPlaylists();
+    } catch (error) {
+      console.error('Failed to remove song from playlist:', error);
+      this.showToast('移除失败，请重试', 'error');
     }
   },
   
@@ -688,10 +939,14 @@ const App = {
    * 加载主题
    */
   loadTheme() {
-    const theme = Storage.getSetting('theme', 'dark');
+    const theme = Storage.getSetting('theme', 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+
+    const btn = document.getElementById('themeToggle');
     if (theme === 'light') {
-      document.documentElement.setAttribute('data-theme', 'light');
-      document.getElementById('themeToggle').innerHTML = '<span class="icon">☀️</span>';
+      btn.innerHTML = '<span class="icon">☀️</span>';
+    } else {
+      btn.innerHTML = '<span class="icon">🌙</span>';
     }
   },
   
@@ -701,12 +956,87 @@ const App = {
   toggleTheme() {
     const current = document.documentElement.getAttribute('data-theme');
     const newTheme = current === 'light' ? 'dark' : 'light';
-    
+
     document.documentElement.setAttribute('data-theme', newTheme);
     Storage.saveSetting('theme', newTheme);
-    
+
     const btn = document.getElementById('themeToggle');
     btn.innerHTML = newTheme === 'light' ? '<span class="icon">☀️</span>' : '<span class="icon">🌙</span>';
+  },
+
+  /**
+   * 更新播放列表队列显示
+   */
+  updatePlaylistQueue() {
+    const container = document.getElementById('playlistQueue');
+    const countElement = document.getElementById('playlistPanelCount');
+
+    if (!Player.playlist || Player.playlist.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-title">播放列表为空</div>
+          <div class="empty-state-description">添加歌曲开始播放</div>
+        </div>
+      `;
+      countElement.textContent = '0 首歌曲';
+      return;
+    }
+
+    // 更新歌曲数
+    countElement.textContent = `${Player.playlist.length} 首歌曲`;
+
+    container.innerHTML = Player.playlist.map((song, index) => `
+      <div class="queue-item ${index === Player.currentIndex ? 'active' : ''}" data-index="${index}">
+        <div class="queue-item-index">${index + 1}</div>
+        <div class="queue-item-info">
+          <div class="queue-item-title">${song.name || '未知歌曲'}</div>
+          <div class="queue-item-artist">${song.artist || '未知歌手'}</div>
+        </div>
+        <button class="btn-icon-sm queue-item-remove" onclick="App.removeFromQueue(${index})" title="移除">
+          <span class="icon-sm">✕</span>
+        </button>
+      </div>
+    `).join('');
+
+    // 绑定点击事件
+    container.querySelectorAll('.queue-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        // 如果点击的是删除按钮，不触发播放
+        if (e.target.closest('.queue-item-remove')) return;
+
+        const index = parseInt(item.dataset.index);
+        Player.currentIndex = index;
+        Player.play(Player.playlist[index]);
+        this.updatePlaylistQueue();
+      });
+    });
+  },
+
+  /**
+   * 从播放列表移除歌曲
+   */
+  removeFromQueue(index) {
+    if (index < 0 || index >= Player.playlist.length) return;
+
+    // 如果移除的是当前播放的歌曲
+    if (index === Player.currentIndex) {
+      // 如果还有其他歌曲，播放下一首
+      if (Player.playlist.length > 1) {
+        Player.next();
+      } else {
+        Player.pause();
+      }
+    } else if (index < Player.currentIndex) {
+      // 如果移除的歌曲在当前播放歌曲之前，调整索引
+      Player.currentIndex--;
+    }
+
+    // 移除歌曲
+    Player.playlist.splice(index, 1);
+
+    // 更新显示
+    this.updatePlaylistQueue();
+    this.showToast('已从播放列表移除', 'success');
   }
 };
 

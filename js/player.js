@@ -9,7 +9,7 @@ const Player = {
   playlist: [],
   currentIndex: 0,
   isPlaying: false,
-  volume: 0.8,
+  volume: 0.5,
   
   // 播放模式
   MODE: {

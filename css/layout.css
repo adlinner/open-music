@@ -68,6 +68,17 @@
   gap: var(--spacing-md);
 }
 
+/* 桌面端隐藏菜单按钮 */
+#menuToggle {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  #menuToggle {
+    display: flex;
+  }
+}
+
 /* ========================================
    主内容区
    ======================================== */
@@ -450,6 +461,109 @@
   transform: translateX(var(--spacing-sm));
 }
 
+/* 播放列表面板 */
+.playlist-panel {
+  position: fixed;
+  right: 0;
+  top: 70px;
+  bottom: 90px;
+  width: 350px;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-color);
+  padding: var(--spacing-xl);
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform var(--transition-slow);
+  z-index: var(--z-sticky);
+}
+
+.playlist-panel.active {
+  transform: translateX(0);
+}
+
+.playlist-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+}
+
+.playlist-panel-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.playlist-panel-count {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.playlist-queue {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.queue-item:hover {
+  background: var(--bg-glass);
+}
+
+.queue-item.active {
+  background: var(--bg-glass-hover);
+  border-left: 3px solid var(--color-primary);
+}
+
+.queue-item-index {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  min-width: 24px;
+  text-align: center;
+}
+
+.queue-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.queue-item-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue-item-artist {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue-item-remove {
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.queue-item:hover .queue-item-remove {
+  opacity: 1;
+}
+
 /* ========================================
    响应式布局
    ======================================== */
@@ -505,6 +619,10 @@
   .lyrics-panel {
     width: 100%;
   }
+
+  .playlist-panel {
+    width: 100%;
+  }
   
   .grid-2,
   .grid-3,
@@ -525,6 +643,10 @@
   }
   
   .lyrics-panel {
+    width: 300px;
+  }
+
+  .playlist-panel {
     width: 300px;
   }
 }

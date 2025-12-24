@@ -137,10 +137,17 @@ const Storage = {
    * 获取单个歌单
    */
   async getPlaylist(id) {
+    // 确保 ID 是数字类型
+    const numericId = typeof id === 'string' ? parseInt(id) : id;
+    console.log('Getting playlist:', id, 'Converted to:', numericId);
+
     return new Promise((resolve, reject) => {
       this.transaction(this.STORES.PLAYLISTS, 'readonly', (store) => {
-        const request = store.get(id);
-        request.onsuccess = () => resolve(request.result);
+        const request = store.get(numericId);
+        request.onsuccess = () => {
+          console.log('Playlist found:', request.result);
+          resolve(request.result);
+        };
         request.onerror = () => reject(request.error);
       });
     });
@@ -150,22 +157,33 @@ const Storage = {
    * 更新歌单
    */
   async updatePlaylist(id, updates) {
-    const playlist = await this.getPlaylist(id);
+    // 确保 ID 是数字类型
+    const numericId = typeof id === 'string' ? parseInt(id) : id;
+    console.log('Updating playlist:', id, 'Converted to:', numericId, 'Updates:', updates);
+
+    const playlist = await this.getPlaylist(numericId);
     if (!playlist) {
+      console.error('Playlist not found:', numericId);
       throw new Error('Playlist not found');
     }
-    
+
     const updatedPlaylist = {
       ...playlist,
       ...updates,
       updatedAt: Date.now()
     };
-    
+
     return new Promise((resolve, reject) => {
       this.transaction(this.STORES.PLAYLISTS, 'readwrite', (store) => {
         const request = store.put(updatedPlaylist);
-        request.onsuccess = () => resolve(updatedPlaylist);
-        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          console.log('Playlist updated successfully:', updatedPlaylist);
+          resolve(updatedPlaylist);
+        };
+        request.onerror = () => {
+          console.error('Failed to update playlist:', request.error);
+          reject(request.error);
+        };
       });
     });
   },
@@ -174,13 +192,19 @@ const Storage = {
    * 删除歌单
    */
   async deletePlaylist(id) {
+    console.log('Deleting playlist:', id);
+
     // 先删除歌单中的所有歌曲
     await this.removeAllSongsFromPlaylist(id);
-    
+    console.log('All songs removed from playlist:', id);
+
     return new Promise((resolve, reject) => {
       this.transaction(this.STORES.PLAYLISTS, 'readwrite', (store) => {
         const request = store.delete(id);
-        request.onsuccess = () => resolve();
+        request.onsuccess = () => {
+          console.log('Playlist deleted successfully:', id);
+          resolve();
+        };
         request.onerror = () => reject(request.error);
       });
     });
@@ -192,24 +216,82 @@ const Storage = {
    * 添加歌曲到歌单
    */
   async addSongToPlaylist(playlistId, song) {
-    const uniqueId = `${song.platform}_${song.id}_${playlistId}`;
+    // 确保 playlistId 是数字类型
+    const numericPlaylistId = typeof playlistId === 'string' ? parseInt(playlistId) : playlistId;
+    const uniqueId = `${song.platform}_${song.id}_${numericPlaylistId}`;
+
+    console.log('Adding song to playlist:', {
+      uniqueId,
+      playlistId: numericPlaylistId,
+      songName: song.name,
+      platform: song.platform,
+      songId: song.id
+    });
+
+    // 先检查歌曲是否已存在
+    const exists = await this.isSongInPlaylist(uniqueId);
+    if (exists) {
+      console.log('Song already exists in playlist:', uniqueId);
+      throw new Error('SONG_ALREADY_EXISTS');
+    }
+
     const songData = {
       uniqueId: uniqueId,
-      playlistId: playlistId,
+      playlistId: numericPlaylistId,  // 存储数字类型
       ...song,
       addedAt: Date.now()
     };
-    
+
     return new Promise(async (resolve, reject) => {
       this.transaction(this.STORES.SONGS, 'readwrite', (store) => {
         const request = store.add(songData);
         request.onsuccess = async () => {
+          console.log('Song added successfully:', uniqueId);
           // 更新歌单歌曲数量
-          const playlist = await this.getPlaylist(playlistId);
-          await this.updatePlaylist(playlistId, {
+          const playlist = await this.getPlaylist(numericPlaylistId);
+          await this.updatePlaylist(numericPlaylistId, {
             songCount: (playlist.songCount || 0) + 1
           });
           resolve(songData);
+        };
+        request.onerror = () => {
+          console.error('Failed to add song:', request.error);
+          reject(request.error);
+        };
+      });
+    });
+  },
+
+  /**
+   * 检查歌曲是否已在歌单中
+   */
+  async isSongInPlaylist(uniqueId) {
+    return new Promise((resolve, reject) => {
+      this.transaction(this.STORES.SONGS, 'readonly', (store) => {
+        const request = store.get(uniqueId);
+        request.onsuccess = () => {
+          const exists = !!request.result;
+          console.log('Checking if song exists:', uniqueId, 'Result:', exists);
+          if (exists) {
+            console.log('Existing song data:', request.result);
+          }
+          resolve(exists);
+        };
+        request.onerror = () => reject(request.error);
+      });
+    });
+  },
+
+  /**
+   * 调试：获取所有歌曲（用于检查残留数据）
+   */
+  async getAllSongsDebug() {
+    return new Promise((resolve, reject) => {
+      this.transaction(this.STORES.SONGS, 'readonly', (store) => {
+        const request = store.getAll();
+        request.onsuccess = () => {
+          console.log('All songs in database:', request.result);
+          resolve(request.result);
         };
         request.onerror = () => reject(request.error);
       });
@@ -220,11 +302,18 @@ const Storage = {
    * 获取歌单中的所有歌曲
    */
   async getPlaylistSongs(playlistId) {
+    // 确保 ID 是数字类型
+    const numericId = typeof playlistId === 'string' ? parseInt(playlistId) : playlistId;
+    console.log('Getting songs for playlist:', playlistId, 'Converted to:', numericId);
+
     return new Promise((resolve, reject) => {
       this.transaction(this.STORES.SONGS, 'readonly', (store) => {
         const index = store.index('playlistId');
-        const request = index.getAll(playlistId);
-        request.onsuccess = () => resolve(request.result);
+        const request = index.getAll(numericId);
+        request.onsuccess = () => {
+          console.log('Found songs:', request.result.length);
+          resolve(request.result);
+        };
         request.onerror = () => reject(request.error);
       });
     });
@@ -238,11 +327,18 @@ const Storage = {
       this.transaction(this.STORES.SONGS, 'readwrite', (store) => {
         const request = store.delete(uniqueId);
         request.onsuccess = async () => {
-          // 更新歌单歌曲数量
-          const playlist = await this.getPlaylist(playlistId);
-          await this.updatePlaylist(playlistId, {
-            songCount: Math.max((playlist.songCount || 1) - 1, 0)
-          });
+          // 更新歌单歌曲数量（如果歌单还存在）
+          try {
+            const playlist = await this.getPlaylist(playlistId);
+            if (playlist) {
+              await this.updatePlaylist(playlistId, {
+                songCount: Math.max((playlist.songCount || 1) - 1, 0)
+              });
+            }
+          } catch (error) {
+            // 歌单可能已被删除，忽略错误
+            console.log('Playlist not found, skipping count update');
+          }
           resolve();
         };
         request.onerror = () => reject(request.error);
@@ -254,11 +350,43 @@ const Storage = {
    * 移除歌单中的所有歌曲
    */
   async removeAllSongsFromPlaylist(playlistId) {
-    const songs = await this.getPlaylistSongs(playlistId);
-    const promises = songs.map(song => 
-      this.removeSongFromPlaylist(song.uniqueId, playlistId)
-    );
-    return Promise.all(promises);
+    console.log('Removing all songs from playlist:', playlistId, 'Type:', typeof playlistId);
+
+    return new Promise((resolve, reject) => {
+      this.transaction(this.STORES.SONGS, 'readwrite', (store) => {
+        const index = store.index('playlistId');
+
+        // 尝试两种类型的 playlistId（数字和字符串）
+        const playlistIdNum = typeof playlistId === 'string' ? parseInt(playlistId) : playlistId;
+        const playlistIdStr = String(playlistId);
+
+        console.log('Trying to delete with playlistId:', playlistIdNum, 'and', playlistIdStr);
+
+        const request = index.openCursor();
+        const deletePromises = [];
+        let deletedCount = 0;
+
+        request.onsuccess = (event) => {
+          const cursor = event.target.result;
+          if (cursor) {
+            const song = cursor.value;
+            // 检查 playlistId 是否匹配（支持数字和字符串比较）
+            if (song.playlistId == playlistId || song.playlistId == playlistIdNum || song.playlistId == playlistIdStr) {
+              console.log('Deleting song:', song.uniqueId, 'playlistId:', song.playlistId);
+              deletePromises.push(cursor.delete());
+              deletedCount++;
+            }
+            cursor.continue();
+          } else {
+            // 所有记录已处理完
+            console.log(`Deleted ${deletedCount} songs from playlist ${playlistId}`);
+            Promise.all(deletePromises).then(() => resolve()).catch(reject);
+          }
+        };
+
+        request.onerror = () => reject(request.error);
+      });
+    });
   },
   
   // ==================== 播放历史 ====================

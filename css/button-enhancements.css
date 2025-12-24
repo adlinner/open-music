@@ -27,39 +27,6 @@
   opacity: 1;
 }
 
-/* 主播放按钮特殊效果 */
-#playBtn {
-  background: linear-gradient(135deg, 
-    rgba(102, 126, 234, 0.2) 0%, 
-    rgba(118, 75, 162, 0.2) 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-#playBtn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-
-#playBtn:hover::before {
-  width: 100%;
-  height: 100%;
-}
-
-#playBtn:hover {
-  background: linear-gradient(135deg, 
-    rgba(102, 126, 234, 0.35) 0%, 
-    rgba(118, 75, 162, 0.35) 100%);
-}
-
 /* 收藏按钮动画 */
 #favoriteBtn .icon-sm {
   transition: transform var(--transition-normal);
@@ -126,6 +93,18 @@
 [data-theme="light"] .btn-icon:hover,
 [data-theme="light"] .btn-icon-sm:hover,
 [data-theme="light"] .btn-icon-lg:hover {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 浅色主题下的播放按钮 */
+[data-theme="light"] #playBtn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] #playBtn:hover:not(:disabled) {
   background: rgba(0, 0, 0, 0.08);
   border-color: rgba(0, 0, 0, 0.12);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);

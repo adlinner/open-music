@@ -160,7 +160,7 @@
             <h1 class="content-title" id="playlistDetailTitle">歌单</h1>
             <p class="content-subtitle" id="playlistDetailSubtitle"></p>
           </div>
-          
+
           <div class="content-body">
             <div class="flex gap-md mb-lg">
               <button class="btn btn-primary" id="playAllBtn">
@@ -177,7 +177,25 @@
             </div>
           </div>
         </div>
-        
+
+        <!-- 榜单详情视图 -->
+        <div class="view hidden" id="toplistDetailView">
+          <div class="content-header">
+            <h1 class="content-title" id="toplistDetailTitle">榜单</h1>
+            <p class="content-subtitle" id="toplistDetailSubtitle"></p>
+          </div>
+
+          <div class="content-body">
+            <button class="btn btn-primary mb-lg" id="playToplistBtn">
+              <span>▶️</span>
+              <span>播放全部</span>
+            </button>
+            <div class="song-list" id="toplistSongs">
+              <!-- 榜单歌曲将在这里显示 -->
+            </div>
+          </div>
+        </div>
+
       </main>
       
     </div>
@@ -242,8 +260,8 @@
             <span class="icon-sm" id="volumeIcon">🔊</span>
           </button>
           <div class="slider volume-slider" id="volumeSlider">
-            <div class="slider-fill" id="volumeFill" style="width: 80%;"></div>
-            <div class="slider-thumb" id="volumeThumb" style="left: 80%;"></div>
+            <div class="slider-fill" id="volumeFill" style="width: 50%;"></div>
+            <div class="slider-thumb" id="volumeThumb" style="left: 50%;"></div>
           </div>
         </div>
       </div>
@@ -263,7 +281,46 @@
       </div>
     </div>
   </div>
-  
+
+  <!-- 播放列表面板 -->
+  <div class="playlist-panel" id="playlistPanel">
+    <div class="playlist-panel-header">
+      <div>
+        <h3 class="playlist-panel-title">播放列表</h3>
+        <p class="playlist-panel-count" id="playlistPanelCount">0 首歌曲</p>
+      </div>
+      <button class="btn-icon-sm" id="clearPlaylistBtn" title="清空列表">
+        <span class="icon-sm">🗑️</span>
+      </button>
+    </div>
+    <div class="playlist-queue" id="playlistQueue">
+      <div class="empty-state">
+        <div class="empty-state-title">播放列表为空</div>
+        <div class="empty-state-description">添加歌曲开始播放</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 选择歌单模态框 -->
+  <div class="modal-overlay" id="playlistSelectModal" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">添加到歌单</h3>
+        <button class="btn-icon-sm" id="closePlaylistModal">
+          <span class="icon-sm">✕</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="playlistSelectList" class="playlist-select-list">
+          <!-- 歌单列表将在这里显示 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="toast-container" id="toastContainer"></div>
+
   <!-- JavaScript -->
   <script src="js/api.js"></script>
   <script src="js/storage.js"></script>
