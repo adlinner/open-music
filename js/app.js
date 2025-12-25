@@ -154,7 +154,29 @@ const App = {
     document.getElementById('menuToggle').addEventListener('click', () => {
       document.getElementById('sidebar').classList.toggle('active');
     });
-    
+
+    // 平台Tab切换
+    document.querySelectorAll('#platformTabs .tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        const platform = tab.dataset.platform;
+
+        // 更新Tab激活状态
+        document.querySelectorAll('#platformTabs .tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        // 加载对应平台的排行榜
+        this.loadTopLists(platform);
+      });
+    });
+
+    // 榜单详情返回按钮
+    document.getElementById('backToDiscoverBtn').addEventListener('click', () => {
+      this.switchView('discover');
+      // 更新侧边栏激活状态
+      document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+      document.querySelector('.sidebar-item[data-view="discover"]').classList.add('active');
+    });
+
     // 收藏按钮
     document.getElementById('favoriteBtn').addEventListener('click', () => {
       this.toggleFavorite();
@@ -365,24 +387,33 @@ const App = {
   /**
    * 加载排行榜
    */
-  async loadTopLists() {
+  async loadTopLists(platform = 'netease') {
     const grid = document.getElementById('toplistsGrid');
-    
+
     try {
-      // 加载网易云排行榜
-      const result = await API.getTopLists('netease');
-      
+      // 显示加载状态
+      grid.innerHTML = `
+        <div class="skeleton" style="height: 200px;"></div>
+        <div class="skeleton" style="height: 200px;"></div>
+        <div class="skeleton" style="height: 200px;"></div>
+      `;
+
+      // 加载指定平台的排行榜
+      const result = await API.getTopLists(platform);
+
       if (result.data && result.data.list) {
         const toplists = result.data.list.slice(0, 6); // 取前 6 个
+        const platformName = this.getPlatformName(platform);
+
         grid.innerHTML = toplists.map(toplist => `
-          <div class="card card-glass hover-lift" style="cursor: pointer;" onclick="App.loadToplistSongs('netease', '${toplist.id}', '${toplist.name}')">
+          <div class="card card-glass hover-lift" style="cursor: pointer;" onclick="App.loadToplistSongs('${platform}', '${toplist.id}', '${toplist.name}')">
             <div class="card-header">
               <h3 class="card-title">${toplist.name || '排行榜'}</h3>
             </div>
             <div class="card-body">
               <p class="text-sm text-secondary">${toplist.updateFrequency || '定期更新'}</p>
               <div class="flex gap-sm mt-md">
-                <span class="badge badge-primary">网易云</span>
+                <span class="badge badge-primary">${platformName}</span>
               </div>
             </div>
           </div>
@@ -390,7 +421,7 @@ const App = {
       }
     } catch (error) {
       console.error('Failed to load toplists:', error);
-      grid.innerHTML = '<div class="empty-state"><div class="empty-state-title">加载失败</div></div>';
+      grid.innerHTML = '<div class="empty-state"><div class="empty-state-title">加载失败</div><div class="empty-state-description">该平台暂不支持或网络错误</div></div>';
     }
   },
   

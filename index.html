@@ -104,6 +104,14 @@
           
           <div class="content-body">
             <h2 class="text-xl font-semibold mb-lg">热门排行榜</h2>
+
+            <!-- 平台切换Tab -->
+            <div class="tabs" id="platformTabs">
+              <button class="tab active" data-platform="netease">网易云音乐</button>
+              <button class="tab" data-platform="kuwo">酷我音乐</button>
+              <button class="tab" data-platform="qq">QQ音乐</button>
+            </div>
+
             <div class="grid grid-3" id="toplistsGrid">
               <div class="skeleton" style="height: 200px;"></div>
               <div class="skeleton" style="height: 200px;"></div>
@@ -181,6 +189,10 @@
         <!-- 榜单详情视图 -->
         <div class="view hidden" id="toplistDetailView">
           <div class="content-header">
+            <button class="btn btn-secondary mb-md" id="backToDiscoverBtn">
+              <span>←</span>
+              <span>返回</span>
+            </button>
             <h1 class="content-title" id="toplistDetailTitle">榜单</h1>
             <p class="content-subtitle" id="toplistDetailSubtitle"></p>
           </div>

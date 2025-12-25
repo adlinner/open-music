@@ -239,6 +239,7 @@
   border-radius: var(--radius-xl);
   padding: var(--spacing-lg);
   transition: all var(--transition-normal);
+  border: 1px solid transparent;
 }
 
 .card-glass {
@@ -249,7 +250,13 @@
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+.card-glass:hover {
+  background: var(--bg-glass-hover);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
 }
 
 .card-header {
@@ -278,15 +285,19 @@
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-fast);
+  border: 1px solid transparent;
 }
 
 .song-item:hover {
   background: var(--bg-glass);
+  border-color: rgba(102, 126, 234, 0.2);
+  transform: translateX(4px);
 }
 
 .song-item.active {
   background: var(--bg-glass-hover);
-  border-left: 3px solid var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
 }
 
 .song-cover {
