@@ -258,25 +258,122 @@ const App = {
     document.getElementById('repeatBtn').addEventListener('click', () => {
       Player.togglePlayMode();
     });
-    
-    // 进度条
+
+    // 播放进度条
     const progressBar = document.getElementById('progressBar');
-    progressBar.addEventListener('click', (e) => {
+    let isProgressSliding = false;
+
+    // 更新进度的通用函数
+    const updateProgress = (e) => {
       const rect = progressBar.getBoundingClientRect();
-      const percent = (e.clientX - rect.left) / rect.width;
+      const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
       const time = percent * Player.getDuration();
       Player.seek(time);
+    };
+
+    // 点击进度条
+    progressBar.addEventListener('click', updateProgress);
+
+    // 拖动进度条
+    progressBar.addEventListener('mousedown', (e) => {
+      isProgressSliding = true;
+      updateProgress(e);
+      e.preventDefault();
     });
-    
+
+    document.addEventListener('mousemove', (e) => {
+      if (isProgressSliding) {
+        updateProgress(e);
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      isProgressSliding = false;
+    });
+
+    // 触摸支持
+    progressBar.addEventListener('touchstart', (e) => {
+      isProgressSliding = true;
+      const touch = e.touches[0];
+      const rect = progressBar.getBoundingClientRect();
+      const percent = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+      const time = percent * Player.getDuration();
+      Player.seek(time);
+      e.preventDefault();
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      if (isProgressSliding && e.touches.length > 0) {
+        const touch = e.touches[0];
+        const rect = progressBar.getBoundingClientRect();
+        const percent = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+        const time = percent * Player.getDuration();
+        Player.seek(time);
+      }
+    });
+
+    document.addEventListener('touchend', () => {
+      isProgressSliding = false;
+    });
+
     // 音量控制
     const volumeSlider = document.getElementById('volumeSlider');
-    volumeSlider.addEventListener('click', (e) => {
+    let isVolumeSliding = false;
+
+    // 更新音量的通用函数
+    const updateVolume = (e) => {
       const rect = volumeSlider.getBoundingClientRect();
-      const percent = (e.clientX - rect.left) / rect.width;
+      const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
       Player.setVolume(percent);
       this.updateVolumeUI(percent);
+    };
+
+    // 点击音量条
+    volumeSlider.addEventListener('click', updateVolume);
+
+    // 拖动音量条
+    volumeSlider.addEventListener('mousedown', (e) => {
+      isVolumeSliding = true;
+      updateVolume(e);
+      e.preventDefault();
     });
-    
+
+    document.addEventListener('mousemove', (e) => {
+      if (isVolumeSliding) {
+        updateVolume(e);
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      isVolumeSliding = false;
+    });
+
+    // 触摸支持
+    volumeSlider.addEventListener('touchstart', (e) => {
+      isVolumeSliding = true;
+      const touch = e.touches[0];
+      const rect = volumeSlider.getBoundingClientRect();
+      const percent = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+      Player.setVolume(percent);
+      this.updateVolumeUI(percent);
+      e.preventDefault();
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      if (isVolumeSliding && e.touches.length > 0) {
+        const touch = e.touches[0];
+        const rect = volumeSlider.getBoundingClientRect();
+        const percent = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width));
+        Player.setVolume(percent);
+        this.updateVolumeUI(percent);
+      }
+    });
+
+    document.addEventListener('touchend', () => {
+      isVolumeSliding = false;
+    });
+
+    // 音量按钮切换静音
     document.getElementById('volumeBtn').addEventListener('click', () => {
       if (Player.volume > 0) {
         Player.setVolume(0);
